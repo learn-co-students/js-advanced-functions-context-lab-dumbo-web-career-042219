@@ -9,14 +9,78 @@
  for you to use if you need it!
  */
 
-let allWagesFor = function () {
-    let eligibleDates = this.timeInEvents.map(function (e) {
-        return e.date
-    })
+let allWagesFor = function() {
+  let eligibleDates = this.timeInEvents.map(function(e) {
+    return e.date;
+  });
 
-    let payable = eligibleDates.reduce(function (memo, d) {
-        return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
+  let payable = eligibleDates.reduce(
+    function(memo, d) {
+      return memo + wagesEarnedOnDate.call(this, d);
+    }.bind(this),
+    0
+  ); // <== Hm, why did we need to add bind() there? We'll discuss soon!
 
-    return payable
+  return payable;
+};
+
+function createEmployeeRecord(arr) {
+  return {
+    firstName: arr[0],
+    familyName: arr[1],
+    title: arr[2],
+    payPerHour: arr[3],
+    timeInEvents: [],
+    timeOutEvents: []
+  };
+}
+
+let createEmployeeRecords = employeeData => {
+  return employeeData.map(arr => createEmployeeRecord(arr));
+};
+
+function createTimeInEvent(dateTime) {
+  let [date, hour] = dateTime.split(" ");
+  this.timeInEvents.push({
+    type: "TimeIn",
+    hour: parseInt(hour, 10),
+    date: date
+  });
+  return this;
+}
+
+function createTimeOutEvent(dateTime) {
+  let [date, hour] = dateTime.split(" ");
+  this.timeOutEvents.push({
+    type: "TimeOut",
+    hour: parseInt(hour, 10),
+    date: date
+  });
+  return this;
+}
+
+function hoursWorkedOnDate(date) {
+  let inEvent = this.timeInEvents.find(e => {
+    return e.date === date;
+  });
+  let outEvent = this.timeOutEvents.find(e => {
+    return e.date === date;
+  });
+  return (outEvent.hour - inEvent.hour) / 100;
+}
+
+function wagesEarnedOnDate(date) {
+  return hoursWorkedOnDate.call(this, date) * this.payPerHour;
+}
+
+function findEmployeeByFirstName(employees, name) {
+  return employees.find(employee => {
+    return employee.firstName === name;
+  });
+}
+
+function calculatePayroll(employees) {
+  return employees.reduce((sum, employee) => {
+    return sum + allWagesFor.call(employee);
+  }, 0);
 }
